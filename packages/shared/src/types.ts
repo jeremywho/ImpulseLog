@@ -33,3 +33,32 @@ export interface AuthResponse {
 export interface ApiError {
   message: string;
 }
+
+// Impulse Entry Types
+export interface ImpulseEntry {
+  id: string;
+  userId: number;
+  createdAt: string;
+  updatedAt?: string;
+  impulseText: string;
+  trigger?: string;
+  emotion?: string;
+  didAct: 'yes' | 'no' | 'unknown';
+  notes?: string;
+}
+
+export interface CreateImpulseEntry {
+  impulseText: string;
+  trigger?: string;
+  emotion?: string;
+  didAct?: 'yes' | 'no' | 'unknown';
+  notes?: string;
+}
+
+export interface UpdateImpulseEntry extends Partial<CreateImpulseEntry> {}
+
+export interface ImpulseFilters {
+  startDate?: string;
+  endDate?: string;
+  didAct?: 'all' | 'yes' | 'no' | 'unknown';
+}

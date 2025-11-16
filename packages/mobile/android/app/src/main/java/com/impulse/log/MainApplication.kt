@@ -1,4 +1,4 @@
-package com.mobile
+package com.impulse.log
 
 import android.app.Application
 import com.facebook.react.PackageList

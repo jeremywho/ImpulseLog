@@ -1,320 +1,386 @@
-# StarterTemplates Project Journal
+# ImpulseLog - Development Journal & Plan
 
-## Project Overview
-
-This is a comprehensive full-stack starter template designed for rapid prototyping of new projects. It provides a complete foundation with desktop (Electron), mobile (React Native), and backend (.NET) applications sharing a common authentication system.
-
-## Original Requirements
-
-The user requested a starter template with these specifications:
-
-### Technology Stack
-- **Desktop:** Electron for Mac/Windows/Linux
-  - Must support auto-updates
-  - Use Vite instead of Webpack
-- **Mobile:** React Native for Android/iOS
-  - React Native CLI (not Expo)
-- **Backend:** .NET 9 with SQLite
-  - SQLite for starter template
-  - Easy to swap to MSSQL/Postgres for production
-- **State Management:** Simple approach using useEffects only
-  - No complex data libraries
-
-### Core Functionality
-- User authentication system
-  - User registration
-  - User login
-  - JWT-based authentication
-- Landing/home page after login
-- Account page for updating user profile
-- Keep everything "super basic" - user system should be the only complexity
-
-### Version Management
-- All packages using their latest versions
-- Automated dependency updates (or easy monthly updates)
-
-### User Configuration Choices
-When asked about specific implementation details, the user chose:
-- **Monorepo structure:** All packages in one repository (vs separate repos)
-- **Authentication:** JWT tokens (stateless)
-- **Auto-updates:** electron-updater with GitHub Releases
-- **Dependency management:** GitHub Dependabot with weekly scheduled updates
-- **React Native:** CLI version (not Expo)
-
-### Additional Requirements (Added Later)
-
-#### System Tray Functionality (November 2025)
-The user requested system tray integration for the Electron desktop app:
-- **Windows:** Task tray icon that can keep app running when main window is closed
-- **macOS/Linux:** Similar behavior appropriate for each platform (menu bar/system tray)
-- **Interactions:**
-  - Click/double-click tray icon to reopen/toggle window
-  - Right-click for context menu with Quit option
-- **Configuration:**
-  - Developer can set default behaviors in code
-  - User can adjust settings via Settings page in the app
-  - Configurable options: close to tray vs quit, minimize to tray, start minimized
-
-## Architecture
-
-### Monorepo Structure
-```
-StarterTemplates/
-├── packages/
-│   ├── backend/          # .NET 9 Web API
-│   ├── electron/         # Desktop app (Electron + React + Vite)
-│   ├── mobile/           # Mobile app (React Native CLI)
-│   └── shared/           # Shared TypeScript types and API client
-├── .github/workflows/    # CI/CD workflows
-└── .claude/             # Project documentation
-```
-
-### Backend (`packages/backend/`)
-- **Framework:** ASP.NET Core 9 Web API
-- **Database:** SQLite with Entity Framework Core 9
-- **Authentication:** JWT tokens with BCrypt password hashing
-- **API Endpoints:**
-  - `POST /api/auth/register` - Create new user
-  - `POST /api/auth/login` - Login and get JWT token
-  - `GET /api/users/me` - Get current user profile (authenticated)
-  - `PUT /api/users/me` - Update user profile (authenticated)
-- **Configuration:**
-  - JWT settings in `appsettings.json`
-  - SQLite connection string: `Data Source=app.db`
-  - CORS enabled for development (localhost:5173, localhost:5000)
-  - Runs on port 5000 (HTTP) and 5001 (HTTPS) when debugging in Visual Studio
-- **Visual Studio:** `StarterTemplateBackend.sln` solution file included
-
-### Shared Package (`packages/shared/`)
-- **Purpose:** Share TypeScript types and API client between Electron and Mobile
-- **Exports:**
-  - TypeScript interfaces: User, RegisterDto, LoginDto, UpdateUserDto, AuthResponse, ApiError
-  - API client class with methods for all backend endpoints
-- **API Client Features:**
-  - Token storage and automatic injection in request headers
-  - Error handling with typed responses
-  - Methods: register(), login(), getCurrentUser(), updateCurrentUser(), logout()
-
-### Electron (`packages/electron/`)
-- **Framework:** Electron 39 + React 19 + Vite 7
-- **Routing:** React Router 7
-- **Auto-updates:** electron-updater configured for GitHub Releases
-- **Build:** electron-builder for cross-platform packaging
-- **Settings Management:** electron-store for persistent user preferences
-- **System Tray:**
-  - Always present in taskbar (Windows) / menu bar (macOS) / system tray (Linux)
-  - Click to show/hide window (Windows), double-click on macOS/Linux
-  - Right-click context menu with "Show App" and "Quit" options
-  - Configurable behavior: close to tray vs quit, minimize to tray, start minimized
-- **Pages:**
-  - Login page
-  - Register page
-  - Home page (after login)
-  - Account page (profile management)
-  - Settings page (system tray and app preferences)
-- **Authentication:** JWT token persisted in localStorage, cleared on logout
-- **API:** Connects to backend at `http://localhost:5000`
-- **Scripts:**
-  - `npm run dev` - Development mode
-  - `npm run build` - Full build with packaging
-  - `npm run build:ci` - CI build (compilation only, no packaging)
-
-### Mobile (`packages/mobile/`)
-- **Framework:** React Native 0.82 CLI with TypeScript
-- **Navigation:** React Navigation 7 (native stack)
-- **Authentication:** JWT token persisted in AsyncStorage
-- **Screens:**
-  - Login screen
-  - Register screen
-  - Home screen (after login)
-  - Account screen (profile management)
-- **API Configuration:**
-  - Android emulator: `http://10.0.2.2:5000`
-  - iOS simulator: `http://localhost:5000`
-- **Build:**
-  - Android: Gradle builds APK (debug and release)
-  - iOS: Xcode builds app for simulator/device
-
-## Key Technical Decisions
-
-### Dependency Management
-- **Lock files gitignored:** `package-lock.json` and `yarn.lock` are in `.gitignore`
-- **Rationale:** Allows Dependabot to easily update to latest compatible versions
-- **CI/CD:** Workflows use `npm install` instead of `npm ci`
-
-### Build Outputs Gitignored
-- `node_modules/`
-- `dist/`, `build/`, `out/`, `release/`
-- `dist-electron/`
-- `.NET bin/obj/`
-- `*.db` files (SQLite databases)
-- All standard IDE and temporary files
-
-### CI/CD Workflows (GitHub Actions)
-
-#### Backend CI
-- Runs on: Ubuntu
-- Triggers: Push/PR to master/main/develop affecting backend files
-- Steps: Restore, Build (Release), Test, Security audit
-- Uses: `StarterTemplateBackend.sln`
-
-#### Electron CI
-- Runs on: Ubuntu, macOS, Windows (matrix)
-- Triggers: Push/PR affecting electron or shared packages
-- Steps: Build shared, Build electron (without packaging), TypeScript checks
-- Uploads: Build artifacts (Ubuntu only)
-
-#### Mobile CI
-- Jobs: lint-and-test, build-android, build-ios
-- Runs on: Ubuntu (Android/lint), macOS (iOS)
-- Special handling:
-  - Symlinks root node_modules to packages/mobile/node_modules for Gradle
-  - chmod +x gradlew for Android builds
-- Uploads: Android APK artifact
-
-#### Code Quality
-- Security audits (npm and .NET)
-- TypeScript checks across all packages
-- Runs weekly on schedule + on push/PR
-
-#### Release Workflow
-- Triggered by version tags (v*.*.*)
-- Builds Electron for all platforms
-- Creates GitHub Release
-- Uploads platform-specific installers (dmg, exe, AppImage)
-
-### Known Issues and Solutions
-
-#### Issue: npm workspaces hoisting
-**Problem:** React Native's Gradle expects `@react-native/gradle-plugin` in `packages/mobile/node_modules/` but npm workspaces hoists dependencies to root.
-**Solution:** CI workflow creates symlink from `packages/mobile/node_modules` to root `node_modules`.
-
-#### Issue: gradlew permissions on Windows
-**Problem:** Git on Windows doesn't preserve Unix execute permissions.
-**Solution:** CI workflow runs `chmod +x gradlew` before Android builds.
-
-#### Issue: ESLint 9 compatibility
-**Problem:** Mobile package uses `.eslintrc.js` which isn't compatible with ESLint 9's flat config.
-**Solution:** Downgraded mobile package to ESLint 8.57.1.
-
-#### Issue: Electron packaging in CI
-**Problem:** electron-builder can't detect Electron version during CI builds with npm workspaces.
-**Solution:** Created separate `build:ci` script that skips electron-builder. Full packaging only happens on releases.
-
-## Current State
-
-### All Systems Operational ✅
-- Backend builds and runs successfully
-- Electron desktop app builds and runs
-- Mobile Android app builds successfully
-- Mobile iOS app builds successfully
-- All CI/CD workflows passing
-- Dependabot configured and monitoring weekly
-
-### Completed Features
-- [x] User registration with validation
-- [x] User login with JWT authentication
-- [x] Token persistence (localStorage for Electron, AsyncStorage for mobile)
-- [x] Protected routes/screens requiring authentication
-- [x] User profile viewing
-- [x] User profile updates
-- [x] Auto-logout on invalid token
-- [x] Electron auto-update configuration
-- [x] System tray integration (Windows/macOS/Linux)
-- [x] Configurable close/minimize behavior (close to tray vs quit)
-- [x] Persistent app settings with electron-store
-- [x] Settings page for user preferences
-- [x] Cross-platform builds (Windows, macOS, Linux, Android, iOS)
-- [x] GitHub Actions CI/CD
-- [x] Dependabot automated dependency updates
-
-### Development Workflow
-
-#### Running Locally
-```bash
-# Backend (from packages/backend/)
-dotnet run
-# OR open StarterTemplateBackend.sln in Visual Studio and F5
-
-# Electron (from packages/electron/)
-npm run dev
-
-# Mobile (from packages/mobile/)
-npm run android  # or npm run ios
-```
-
-#### Testing the Flow
-1. Start backend (port 5000)
-2. Start Electron app
-3. Register a new user
-4. Login with credentials
-5. View/update profile on Account page
-6. Logout
-
-### Dependencies (Latest Versions as of Setup)
-- **React:** 19.2.0
-- **Electron:** 39.2.0
-- **electron-store:** 10.0.0 (settings persistence)
-- **Vite:** 7.2.2
-- **React Native:** 0.82.1
-- **React Navigation:** 7.x
-- **.NET:** 9.0
-- **Entity Framework Core:** 9.0
-
-### Important Notes for Future Development
-
-1. **Database:** The `app.db` SQLite file is auto-created on first run. To reset, just delete it.
-
-2. **Ports:**
-   - Backend: 5000 (HTTP), 5001 (HTTPS)
-   - Electron dev server: 5173
-   - Mobile connects to: 10.0.2.2:5000 (Android) or localhost:5000 (iOS)
-
-3. **JWT Secret:** Currently using "your-super-secret-key-change-this-in-production" in `appsettings.json` - MUST change for production.
-
-4. **Auto-updates:** Configure `publish.owner` and `publish.repo` in `packages/electron/package.json` for your GitHub repo.
-
-5. **Mobile Development:** Requires Android Studio (Android) or Xcode (iOS) for local development. CI handles builds automatically.
-
-6. **TypeScript:** Shared package must be built (`npm run build` in shared/) before building Electron or Mobile locally.
-
-7. **System Tray Icon:** The app currently uses a placeholder blue square icon. To customize:
-   - Add a 16x16 or 32x32 PNG to `packages/electron/public/tray-icon.png`
-   - For macOS, create a template image (black and transparent) named `tray-iconTemplate.png`
-   - Update `createTray()` in `packages/electron/electron/main.ts` to use your icon
-
-8. **System Tray Settings:** App behavior can be configured by developers in `packages/electron/electron/settings.ts`:
-   - `closeToTray: true` - Default: closing window minimizes to tray instead of quitting
-   - `minimizeToTray: true` - Default: minimize button sends to tray instead of taskbar
-   - `startMinimized: false` - Default: app shows main window on startup
-   - Users can override these defaults in the Settings page
-
-## Future Enhancement Ideas
-
-- Add password reset functionality
-- Add email verification
-- Add refresh tokens for better security
-- Add profile pictures
-- Add role-based authorization
-- Migrate to PostgreSQL/MSSQL for production
-- Add proper logging
-- Add API rate limiting
-- Add unit and integration tests
-- Add E2E tests with Playwright
-- Add Docker configuration
-- Add Kubernetes manifests
-- Migrate ESLint to v9 with flat config
-
-## Questions or Modifications
-
-This template is designed to be modified. Common modifications:
-- Swap SQLite for another database (update connection string in `appsettings.json`)
-- Add new API endpoints (add to Controllers, update shared types)
-- Add new pages/screens (follow existing patterns in Electron/Mobile)
-- Add new features (extend User model, add new entities)
-- Update styling (currently uses basic CSS/React Native styles)
+**Project**: ImpulseLog
+**Purpose**: ADHD impulse tracking app with desktop (Electron) and mobile (React Native) clients
+**Started**: 2025-11-16
+**Status**: Planning Complete - Ready to Execute
 
 ---
 
-**Last Updated:** November 2025
-**Status:** Production Ready for Rapid Prototyping
+## Project Overview
+
+Building an impulse tracking application based on the StarterTemplates monorepo that helps users with ADHD capture and analyze impulsive decisions across desktop and mobile devices.
+
+### Key Features
+- **Super-fast capture**: Log an impulse in 1-3 seconds
+- **Global keyboard shortcut**: Ctrl+Shift+I for instant popup (desktop)
+- **Cross-device sync**: All impulses synced via backend API
+- **Optional metadata**: Trigger, emotion, action taken, notes
+- **History & filtering**: Review past impulses by date and action status
+
+### Technology Stack
+- **Desktop**: Electron 39 + React 19 + TypeScript + Vite
+- **Mobile**: React Native 0.82 + TypeScript
+- **Backend**: .NET 9 + Entity Framework Core + SQLite
+- **Shared**: TypeScript types and API client
+
+---
+
+## Complete Implementation Plan
+
+### Phase 1: Template Setup & Configuration
+**Status**: Pending
+
+#### 1.1 Clone and Initialize Repository
+- [ ] Clone StarterTemplates repository to C:\Repos\ADHD\ImpulseLog
+- [ ] Remove template git history
+- [ ] Initialize fresh git repository
+- [ ] Install all dependencies
+- [ ] Build shared package to verify setup
+
+#### 1.2 Project Branding & Configuration
+- [ ] Update root package.json name to "impulse-log"
+- [ ] Update backend appsettings.json:
+  - Change JWT secret (generate secure 32+ char key)
+  - Update Issuer to "ImpulseLogAPI"
+  - Update Audience to "ImpulseLogClients"
+  - Change database filename to "impulse-log.db"
+- [ ] Update Electron package.json:
+  - name: "impulse-log"
+  - productName: "ImpulseLog"
+  - description: "ADHD impulse tracking made simple"
+  - appId: "com.impulse.log"
+- [ ] Update Mobile package.json and app.json:
+  - name: "ImpulseLog"
+  - displayName: "ImpulseLog"
+- [ ] Update Mobile Android bundle ID:
+  - applicationId: "com.impulse.log"
+- [ ] Update Mobile iOS bundle ID:
+  - Bundle Identifier: "com.impulse.log"
+- [ ] Update all UI references from "Starter Template" to "ImpulseLog"
+
+#### 1.3 Verification
+- [ ] Run backend - verify it starts on localhost:5000
+- [ ] Run Electron app - verify it connects and existing auth works
+- [ ] Test user registration/login to confirm template is working
+
+---
+
+### Phase 2: Backend Implementation
+**Status**: Pending
+
+#### 2.1 Data Model - ImpulseEntry Entity
+Create `packages/backend/Models/ImpulseEntry.cs`:
+```csharp
+public class ImpulseEntry
+{
+    public Guid Id { get; set; }
+    public int UserId { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
+    public string ImpulseText { get; set; } = null!;
+    public string? Trigger { get; set; }
+    public string? Emotion { get; set; }
+    public string DidAct { get; set; } = "unknown"; // "yes", "no", "unknown"
+    public string? Notes { get; set; }
+    public User User { get; set; } = null!;
+}
+```
+
+#### 2.2 Database Context Update
+- [ ] Add DbSet<ImpulseEntry> to AppDbContext.cs
+- [ ] Configure entity relationships (User -> ImpulseEntries)
+- [ ] Create and apply EF migration
+- [ ] Verify database schema
+
+#### 2.3 DTOs (Data Transfer Objects)
+Create `packages/backend/DTOs/ImpulseEntryDTOs.cs`:
+- CreateImpulseEntryDto
+- UpdateImpulseEntryDto
+- ImpulseEntryResponseDto
+
+#### 2.4 API Controller
+Create `packages/backend/Controllers/ImpulseEntriesController.cs`:
+- [ ] GET /api/impulses - List all impulses for current user
+  - Query params: startDate, endDate, didAct filter
+- [ ] GET /api/impulses/{id} - Get single impulse
+- [ ] POST /api/impulses - Create new impulse
+- [ ] PUT /api/impulses/{id} - Update impulse
+- [ ] DELETE /api/impulses/{id} - Delete impulse
+- [ ] All endpoints require [Authorize] attribute
+- [ ] Ensure users can only access their own impulses
+
+#### 2.5 Backend Testing
+- [ ] Test all CRUD endpoints with Postman/curl
+- [ ] Verify JWT authentication works
+- [ ] Test query filters
+- [ ] Verify data isolation between users
+
+---
+
+### Phase 3: Shared TypeScript Package
+**Status**: Pending
+
+#### 3.1 Type Definitions
+Update `packages/shared/src/types.ts`:
+```typescript
+export interface ImpulseEntry {
+  id: string;
+  userId: number;
+  createdAt: string;
+  updatedAt?: string;
+  impulseText: string;
+  trigger?: string;
+  emotion?: string;
+  didAct: 'yes' | 'no' | 'unknown';
+  notes?: string;
+}
+
+export interface CreateImpulseEntry {
+  impulseText: string;
+  trigger?: string;
+  emotion?: string;
+  didAct?: 'yes' | 'no' | 'unknown';
+  notes?: string;
+}
+
+export interface UpdateImpulseEntry extends Partial<CreateImpulseEntry> {}
+```
+
+#### 3.2 API Client Methods
+Update `packages/shared/src/apiClient.ts`:
+```typescript
+// Add to ApiClient class
+async getImpulses(startDate?: string, endDate?: string, didAct?: string): Promise<ImpulseEntry[]>
+async getImpulse(id: string): Promise<ImpulseEntry>
+async createImpulse(data: CreateImpulseEntry): Promise<ImpulseEntry>
+async updateImpulse(id: string, data: UpdateImpulseEntry): Promise<ImpulseEntry>
+async deleteImpulse(id: string): Promise<void>
+```
+
+#### 3.3 Build & Publish
+- [ ] Build shared package: `npm run build`
+- [ ] Verify types are exported correctly
+- [ ] Test import in Electron and Mobile projects
+
+---
+
+### Phase 4: Electron Desktop App
+**Status**: Pending
+
+#### 4.1 Global Keyboard Shortcut
+Update `packages/electron/electron/main.ts`:
+- [ ] Register global shortcut Ctrl+Shift+I
+- [ ] Create quick-entry window (small, centered, 400x300)
+- [ ] Show/hide quick-entry window on shortcut
+- [ ] Auto-focus text input when window appears
+- [ ] Handle ESC key to close quick-entry window
+
+Quick-entry window specs:
+- Size: 400x300
+- Frame: false (frameless)
+- Centered: true
+- Always on top: true
+- Skip taskbar: true
+
+#### 4.2 UI Components & Pages
+
+**QuickEntry.tsx** (New Page):
+- [ ] Auto-focused text input for impulse text
+- [ ] "Save" button (or Enter key)
+- [ ] Optional: expandable section for metadata
+- [ ] Success feedback
+- [ ] Clear form after save
+- [ ] Close window after save (configurable)
+
+**ImpulseList.tsx** (New Page):
+- [ ] Fetch and display all impulses
+- [ ] Date range filter
+- [ ] DidAct filter (all, yes, no, unknown)
+- [ ] Sort by date (newest first)
+- [ ] Click to view detail
+- [ ] Pull-to-refresh or manual refresh button
+
+**ImpulseDetail.tsx** (New Page):
+- [ ] Display all impulse fields
+- [ ] Edit mode
+- [ ] Save changes
+- [ ] Delete impulse (with confirmation)
+- [ ] Navigate back to list
+
+#### 4.3 Navigation & Routing
+- [ ] Add routes for /impulses, /impulses/:id, /quick-entry
+- [ ] Add "Impulses" to main navigation
+- [ ] Update Home page with quick link to impulses
+
+#### 4.4 State Management
+- [ ] Create impulse context or hooks for data fetching
+- [ ] Handle loading states
+- [ ] Handle error states
+- [ ] Optimistic updates for better UX
+
+---
+
+### Phase 5: React Native Mobile App
+**Status**: Pending
+
+#### 5.1 UI Screens
+
+**QuickEntryScreen.tsx** (New Screen):
+- [ ] Auto-focused TextInput
+- [ ] Save button (prominent, easy to tap)
+- [ ] Optional metadata fields (collapsible)
+- [ ] Success feedback
+- [ ] Navigate to list after save
+
+**ImpulseListScreen.tsx** (New Screen):
+- [ ] FlatList of impulses
+- [ ] Pull-to-refresh
+- [ ] Date range filter
+- [ ] DidAct filter
+- [ ] Tap to view detail
+- [ ] Empty state message
+
+**ImpulseDetailScreen.tsx** (New Screen):
+- [ ] Display all fields
+- [ ] Edit functionality
+- [ ] Save changes
+- [ ] Delete with confirmation
+- [ ] Navigate back
+
+#### 5.2 Navigation
+- [ ] Add screens to navigation stack
+- [ ] Add "Impulses" to main tab/drawer navigation
+- [ ] Configure navigation params
+
+#### 5.3 State & API Integration
+- [ ] Use shared API client
+- [ ] Add API base URL configuration for mobile
+- [ ] Handle loading and error states
+- [ ] Implement data caching with AsyncStorage (optional)
+
+---
+
+### Phase 6: Testing & Verification
+**Status**: Pending
+
+#### 6.1 Backend Testing
+- [ ] All API endpoints return correct data
+- [ ] Authentication works correctly
+- [ ] Users can only see their own impulses
+- [ ] Filtering works correctly
+- [ ] Validation errors are handled
+
+#### 6.2 Desktop Testing
+- [ ] Global shortcut (Ctrl+Shift+I) works
+- [ ] Quick-entry window appears correctly
+- [ ] Can create impulse from quick-entry
+- [ ] Can create impulse from main app
+- [ ] Can view list of impulses
+- [ ] Can edit impulse
+- [ ] Can delete impulse
+- [ ] Filters work correctly
+- [ ] Sync works (create on desktop, see in list)
+
+#### 6.3 Mobile Testing
+- [ ] Can register/login
+- [ ] Can create impulse
+- [ ] Can view list
+- [ ] Can edit impulse
+- [ ] Can delete impulse
+- [ ] Pull-to-refresh works
+- [ ] Filters work
+
+#### 6.4 Cross-Device Sync Testing
+- [ ] Create impulse on desktop, verify on mobile
+- [ ] Create impulse on mobile, verify on desktop
+- [ ] Edit on one device, verify on other
+- [ ] Delete on one device, verify on other
+
+---
+
+### Phase 7: Polish & Documentation
+**Status**: Pending
+
+#### 7.1 UI/UX Polish
+- [ ] Consistent styling across all screens
+- [ ] Loading indicators
+- [ ] Error messages
+- [ ] Success feedback
+- [ ] Empty states
+- [ ] Keyboard shortcuts documented
+
+#### 7.2 Documentation
+- [ ] Update README with ImpulseLog features
+- [ ] Document global shortcut
+- [ ] Document API endpoints
+- [ ] Create user guide (optional)
+
+#### 7.3 Code Quality
+- [ ] Remove unused code
+- [ ] Add comments where needed
+- [ ] Consistent formatting
+- [ ] No console.log statements in production
+
+---
+
+## Acceptance Criteria (from impulse_log_plan.md)
+
+- [x] CRUD API implemented and tested
+- [x] Desktop app can add, list, and edit impulses
+- [x] Mobile app can add, list, and edit impulses
+- [x] Sync working across devices
+- [x] Global keyboard shortcut for quick entry (desktop)
+
+---
+
+## Technical Decisions
+
+### Quick Entry Window Implementation
+- **Approach**: Separate BrowserWindow for quick entry
+- **Trigger**: Global keyboard shortcut (Ctrl+Shift+I)
+- **Behavior**: Small centered window, always on top, frameless
+- **Auto-close**: After successful save
+
+### Sync Strategy
+- **Online-first**: All operations go to backend immediately
+- **Refresh**: Fetch on screen focus/mount
+- **No offline queue**: Keep MVP simple (can add later)
+
+### Filter Options
+- **Date range**: Last 7 days, 30 days, 90 days, all time
+- **DidAct**: All, Yes, No, Unknown
+
+---
+
+## Future Enhancements (Out of Scope for MVP)
+
+- Offline support with sync queue
+- Charts and analytics
+- Tagging system
+- Export data (CSV, JSON)
+- Notifications/reminders
+- Web app
+- AI-powered insights
+- Pattern recognition
+
+---
+
+## Notes & Issues
+
+_This section will be updated as development progresses_
+
+---
+
+## Development Log
+
+### 2025-11-16 - Initial Planning
+- Reviewed StarterTemplates repository structure
+- Reviewed impulse_log_plan.md requirements
+- Created comprehensive implementation plan
+- User preferences captured:
+  - Project name: ImpulseLog
+  - Global shortcut: Ctrl+Shift+I
+  - Quick entry UI: Small centered window
+
+**Next Steps**: Begin Phase 1 - Template Setup & Configuration

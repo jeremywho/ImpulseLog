@@ -1,8 +1,8 @@
 {
-  "name": "starter-templates",
+  "name": "impulse-log",
   "version": "1.0.0",
   "private": true,
-  "description": "Full-stack starter template with Electron, React Native, and .NET backend",
+  "description": "ADHD impulse tracking app with desktop and mobile clients",
   "workspaces": [
     "packages/*"
   ],

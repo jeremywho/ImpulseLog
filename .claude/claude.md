@@ -1,5 +1,8 @@
 # Claude Instructions
 
-**IMPORTANT: Before doing anything else, read `.claude/journal.md` to understand this project.**
+**IMPORTANT: Before doing anything else, read these files to understand this project:**
 
-This file contains the complete project history, original requirements, architecture decisions, and current state.
+1. **`.claude/plan.md`** - Product & technical specification for ImpulseLog
+2. **`.claude/journal.md`** - Complete development history, decisions, and current state
+
+These files contain the original requirements, architecture decisions, and implementation progress.

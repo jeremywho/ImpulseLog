@@ -13,8 +13,11 @@ function Home() {
   return (
     <>
       <nav className="nav">
-        <h2>Starter Template</h2>
+        <h2>ImpulseLog</h2>
         <div className="nav-links">
+          <span className="link" onClick={() => navigate('/impulses')}>
+            Impulses
+          </span>
           <span className="link" onClick={() => navigate('/account')}>
             Account
           </span>
@@ -29,7 +32,7 @@ function Home() {
       <div className="container">
         <div className="card">
           <h1>Welcome, {user?.username}!</h1>
-          <p>This is your home page. You're successfully logged in.</p>
+          <p>Track your impulses and build awareness of your patterns.</p>
           {user?.fullName && (
             <p>
               <strong>Full Name:</strong> {user.fullName}
@@ -42,6 +45,19 @@ function Home() {
             <strong>Member since:</strong>{' '}
             {user?.createdAt && new Date(user.createdAt).toLocaleDateString()}
           </p>
+
+          <div style={{ marginTop: '30px' }}>
+            <h3>Quick Actions</h3>
+            <p style={{ marginBottom: '15px', color: '#666' }}>
+              Press <strong>Ctrl+Shift+I</strong> anywhere to quickly log an impulse
+            </p>
+            <button
+              onClick={() => navigate('/impulses')}
+              style={{ marginRight: '10px' }}
+            >
+              View All Impulses
+            </button>
+          </div>
         </div>
       </div>
     </>

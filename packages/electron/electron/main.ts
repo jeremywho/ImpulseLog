@@ -1,9 +1,10 @@
-import { app, BrowserWindow, Tray, Menu, nativeImage, ipcMain } from 'electron';
+import { app, BrowserWindow, Tray, Menu, nativeImage, ipcMain, globalShortcut } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import path from 'path';
 import { settingsStore, AppSettings } from './settings';
 
 let mainWindow: BrowserWindow | null = null;
+let quickEntryWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
 let isQuitting = false;
 
@@ -58,7 +59,7 @@ function createTray() {
     },
   ]);
 
-  tray.setToolTip('Starter Template App');
+  tray.setToolTip('ImpulseLog - Track Your Impulses');
   tray.setContextMenu(contextMenu);
 
   // Single click to show/hide on Windows, double click on macOS
@@ -129,6 +130,66 @@ function createWindow() {
   }
 }
 
+function createQuickEntryWindow() {
+  if (quickEntryWindow) {
+    quickEntryWindow.show();
+    quickEntryWindow.focus();
+    return;
+  }
+
+  quickEntryWindow = new BrowserWindow({
+    width: 500,
+    height: 400,
+    frame: false,
+    center: true,
+    alwaysOnTop: true,
+    skipTaskbar: true,
+    resizable: false,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+    },
+  });
+
+  if (process.env.VITE_DEV_SERVER_URL) {
+    quickEntryWindow.loadURL(`${process.env.VITE_DEV_SERVER_URL}#/quick-entry`);
+  } else {
+    quickEntryWindow.loadFile(path.join(__dirname, '../dist/index.html'), {
+      hash: '/quick-entry'
+    });
+  }
+
+  quickEntryWindow.on('blur', () => {
+    // Hide window when it loses focus
+    quickEntryWindow?.hide();
+  });
+
+  quickEntryWindow.on('closed', () => {
+    quickEntryWindow = null;
+  });
+}
+
+function registerGlobalShortcut() {
+  // Register Ctrl+Shift+I for quick entry
+  const ret = globalShortcut.register('CommandOrControl+Shift+I', () => {
+    if (quickEntryWindow) {
+      if (quickEntryWindow.isVisible()) {
+        quickEntryWindow.hide();
+      } else {
+        quickEntryWindow.show();
+        quickEntryWindow.focus();
+      }
+    } else {
+      createQuickEntryWindow();
+    }
+  });
+
+  if (!ret) {
+    console.log('Global shortcut registration failed');
+  }
+}
+
 function checkForUpdates() {
   autoUpdater.checkForUpdatesAndNotify();
 
@@ -162,6 +223,7 @@ ipcMain.handle('reset-settings', () => {
 app.whenReady().then(() => {
   createTray();
   createWindow();
+  registerGlobalShortcut();
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
@@ -181,4 +243,9 @@ app.on('window-all-closed', () => {
 
 app.on('before-quit', () => {
   isQuitting = true;
+});
+
+app.on('will-quit', () => {
+  // Unregister all global shortcuts
+  globalShortcut.unregisterAll();
 });

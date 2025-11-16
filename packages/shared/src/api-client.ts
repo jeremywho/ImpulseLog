@@ -1,4 +1,15 @@
-import { User, RegisterDto, LoginDto, UpdateUserDto, AuthResponse, ApiError } from './types';
+import {
+  User,
+  RegisterDto,
+  LoginDto,
+  UpdateUserDto,
+  AuthResponse,
+  ApiError,
+  ImpulseEntry,
+  CreateImpulseEntry,
+  UpdateImpulseEntry,
+  ImpulseFilters
+} from './types';
 
 export class ApiClient {
   private baseUrl: string;
@@ -76,5 +87,40 @@ export class ApiClient {
 
   logout() {
     this.setToken(null);
+  }
+
+  // Impulse Entry Methods
+  async getImpulses(filters?: ImpulseFilters): Promise<ImpulseEntry[]> {
+    const params = new URLSearchParams();
+    if (filters?.startDate) params.append('startDate', filters.startDate);
+    if (filters?.endDate) params.append('endDate', filters.endDate);
+    if (filters?.didAct && filters.didAct !== 'all') params.append('didAct', filters.didAct);
+
+    const query = params.toString();
+    return this.request<ImpulseEntry[]>(`/api/impulseentries${query ? `?${query}` : ''}`);
+  }
+
+  async getImpulse(id: string): Promise<ImpulseEntry> {
+    return this.request<ImpulseEntry>(`/api/impulseentries/${id}`);
+  }
+
+  async createImpulse(data: CreateImpulseEntry): Promise<ImpulseEntry> {
+    return this.request<ImpulseEntry>('/api/impulseentries', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateImpulse(id: string, data: UpdateImpulseEntry): Promise<ImpulseEntry> {
+    return this.request<ImpulseEntry>(`/api/impulseentries/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteImpulse(id: string): Promise<void> {
+    await this.request<void>(`/api/impulseentries/${id}`, {
+      method: 'DELETE',
+    });
   }
 }

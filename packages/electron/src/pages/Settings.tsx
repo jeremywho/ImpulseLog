@@ -69,7 +69,7 @@ function Settings() {
   return (
     <>
       <nav className="nav">
-        <h2>Starter Template</h2>
+        <h2>ImpulseLog</h2>
         <div className="nav-links">
           <span className="link" onClick={() => navigate('/')}>
             Home

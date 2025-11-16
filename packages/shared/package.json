@@ -1,7 +1,7 @@
 {
-  "name": "@starter-template/shared",
+  "name": "@impulse-log/shared",
   "version": "1.0.0",
-  "description": "Shared types and utilities for Electron and React Native apps",
+  "description": "Shared types and utilities for ImpulseLog Electron and React Native apps",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {

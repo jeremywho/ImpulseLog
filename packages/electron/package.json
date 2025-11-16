@@ -1,7 +1,7 @@
 {
-  "name": "@starter-template/electron",
+  "name": "@impulse-log/electron",
   "version": "1.0.0",
-  "description": "Electron desktop app with React and Vite",
+  "description": "ImpulseLog desktop app - ADHD impulse tracking made simple",
   "main": "dist-electron/main.js",
   "scripts": {
     "dev": "vite",
@@ -35,8 +35,8 @@
     "wait-on": "^9.0.3"
   },
   "build": {
-    "appId": "com.startertemplate.app",
-    "productName": "StarterTemplate",
+    "appId": "com.impulse.log",
+    "productName": "ImpulseLog",
     "files": [
       "dist/**/*",
       "dist-electron/**/*"
