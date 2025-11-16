@@ -30,7 +30,7 @@ npm run watch
 The shared package is used by both Electron and React Native apps:
 
 ```typescript
-import { ApiClient, User, LoginDto, RegisterDto } from '@starter-template/shared';
+import { ApiClient, User, LoginDto, RegisterDto } from '@impulse-log/shared';
 
 // Create API client
 const api = new ApiClient('http://localhost:5000');
