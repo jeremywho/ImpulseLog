@@ -68,8 +68,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ needs.create-release.outputs.upload_url }}
-        asset_path: ./packages/electron/release/StarterTemplate-${{ needs.create-release.outputs.version }}.AppImage
-        asset_name: StarterTemplate-${{ needs.create-release.outputs.version }}.AppImage
+        asset_path: ./packages/electron/release/ImpulseLog-${{ needs.create-release.outputs.version }}.AppImage
+        asset_name: ImpulseLog-${{ needs.create-release.outputs.version }}.AppImage
         asset_content_type: application/octet-stream
       continue-on-error: true
 
@@ -80,8 +80,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ needs.create-release.outputs.upload_url }}
-        asset_path: ./packages/electron/release/StarterTemplate-${{ needs.create-release.outputs.version }}.dmg
-        asset_name: StarterTemplate-${{ needs.create-release.outputs.version }}.dmg
+        asset_path: ./packages/electron/release/ImpulseLog-${{ needs.create-release.outputs.version }}.dmg
+        asset_name: ImpulseLog-${{ needs.create-release.outputs.version }}.dmg
         asset_content_type: application/octet-stream
       continue-on-error: true
 
@@ -92,7 +92,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ needs.create-release.outputs.upload_url }}
-        asset_path: ./packages/electron/release/StarterTemplate-Setup-${{ needs.create-release.outputs.version }}.exe
-        asset_name: StarterTemplate-Setup-${{ needs.create-release.outputs.version }}.exe
+        asset_path: ./packages/electron/release/ImpulseLog-Setup-${{ needs.create-release.outputs.version }}.exe
+        asset_name: ImpulseLog-Setup-${{ needs.create-release.outputs.version }}.exe
         asset_content_type: application/octet-stream
       continue-on-error: true
