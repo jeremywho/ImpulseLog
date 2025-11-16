@@ -1,0 +1,30 @@
+{
+  "name": "starter-templates",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Full-stack starter template with Electron, React Native, and .NET backend",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "backend": "cd packages/backend && dotnet run",
+    "electron": "cd packages/electron && npm run dev",
+    "mobile": "cd packages/mobile && npm run start",
+    "mobile:android": "cd packages/mobile && npm run android",
+    "mobile:ios": "cd packages/mobile && npm run ios",
+    "build:electron": "cd packages/electron && npm run build",
+    "build:mobile:android": "cd packages/mobile && npm run build:android",
+    "build:mobile:ios": "cd packages/mobile && npm run build:ios",
+    "install:all": "npm install && cd packages/backend && dotnet restore"
+  },
+  "keywords": [
+    "electron",
+    "react-native",
+    "dotnet",
+    "starter-template",
+    "jwt",
+    "monorepo"
+  ],
+  "author": "",
+  "license": "MIT"
+}
