@@ -8,6 +8,9 @@ import LoginScreen from '../screens/LoginScreen';
 import RegisterScreen from '../screens/RegisterScreen';
 import HomeScreen from '../screens/HomeScreen';
 import AccountScreen from '../screens/AccountScreen';
+import QuickEntryScreen from '../screens/QuickEntryScreen';
+import ImpulseListScreen from '../screens/ImpulseListScreen';
+import ImpulseDetailScreen from '../screens/ImpulseDetailScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -36,6 +39,21 @@ function AppNavigator() {
               name="Account"
               component={AccountScreen}
               options={{ title: 'Account Settings' }}
+            />
+            <Stack.Screen
+              name="QuickEntry"
+              component={QuickEntryScreen}
+              options={{ title: 'Quick Entry' }}
+            />
+            <Stack.Screen
+              name="ImpulseList"
+              component={ImpulseListScreen}
+              options={{ title: 'My Impulses' }}
+            />
+            <Stack.Screen
+              name="ImpulseDetail"
+              component={ImpulseDetailScreen}
+              options={{ title: 'Impulse Details' }}
             />
           </>
         ) : (

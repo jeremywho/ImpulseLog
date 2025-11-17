@@ -31,8 +31,28 @@ function HomeScreen({ navigation }: any) {
       <View style={styles.card}>
         <Text style={styles.title}>Welcome, {user?.username}!</Text>
         <Text style={styles.text}>
-          This is your home page. You're successfully logged in.
+          Track your impulses and gain insights into your decision-making patterns.
         </Text>
+
+        <View style={styles.quickActions}>
+          <Text style={styles.quickActionsTitle}>Quick Actions</Text>
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => navigation.navigate('QuickEntry')}>
+            <Text style={styles.actionButtonText}>+ Log New Impulse</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.actionButton, styles.secondaryButton]}
+            onPress={() => navigation.navigate('ImpulseList')}>
+            <Text style={[styles.actionButtonText, styles.secondaryButtonText]}>
+              View All Impulses
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      <View style={styles.card}>
+        <Text style={styles.sectionTitle}>Your Profile</Text>
 
         {user?.fullName && (
           <View style={styles.infoRow}>
@@ -115,6 +135,42 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 20,
     color: '#666',
+  },
+  quickActions: {
+    marginTop: 10,
+  },
+  quickActionsTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 15,
+  },
+  actionButton: {
+    backgroundColor: '#28a745',
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    marginBottom: 10,
+    alignItems: 'center',
+  },
+  actionButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  secondaryButton: {
+    backgroundColor: '#fff',
+    borderWidth: 2,
+    borderColor: '#007bff',
+  },
+  secondaryButtonText: {
+    color: '#007bff',
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 15,
+    color: '#333',
   },
   infoRow: {
     marginBottom: 10,
