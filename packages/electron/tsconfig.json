@@ -23,7 +23,8 @@
     "paths": {
       "@/*": ["./src/*"],
       "@shared/*": ["../shared/src/*"],
-      "@shared": ["../shared/src/index.ts"]
+      "@shared": ["../shared/src/index.ts"],
+      "@impulse-log/shared": ["../shared/src/index.ts"]
     }
   },
   "include": ["src", "electron"],
